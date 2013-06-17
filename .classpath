@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lwjgl-2.5/jar/lwjgl_util.jar" sourcepath="/home/andreas/Dokumente/Privat/Sources/Java/ParticleSystem/lwjgl-2.5/lwjgl-source-2.5.zip"/>
-	<classpathentry kind="lib" path="lwjgl-2.5/jar/lwjgl.jar" sourcepath="/home/andreas/Dokumente/Privat/Sources/Java/ParticleSystem/lwjgl-2.5/lwjgl-source-2.5.zip"/>
-	<classpathentry kind="output" path="bin"/>
-</classpath>
