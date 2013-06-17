@@ -1,0 +1,7 @@
+void main() {
+	vec3 position = gl_Vertex.xyz;
+	float size = gl_Vertex.w;
+	
+	gl_PointSize = size;
+	gl_Position = gl_ModelViewProjectionMatrix * vec4(position, 1);
+}

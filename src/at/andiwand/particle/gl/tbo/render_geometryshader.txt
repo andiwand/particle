@@ -1,0 +1,78 @@
+#version 120
+
+#extension GL_EXT_geometry_shader4 : enable
+
+
+uniform samplerBuffer velocityIn;
+
+varying vec4 color;
+
+const float PI = 3.14159265;
+
+vec2 cartesian2polar(in vec2 cartesian) {
+	vec2 polar;
+	
+	polar.x = length(cartesian);
+	polar.y = atan(cartesian.y, cartesian.x);
+	
+	if (polar.y < 0.0) polar.y += 2.0 * PI;
+	
+	return polar;
+}
+vec3 hsv2rgb(in vec3 hsv) {
+	vec3 rgb;
+	
+	float f = 3.0 * hsv.x / PI;
+	int h = int(f);
+	f -= float(h);
+	
+	float p = hsv.z * (1.0 - hsv.y);
+	float q = hsv.z * (1.0 - hsv.y * f);
+	float t = hsv.z * (1.0 - hsv.y * (1.0 - f));
+	
+	switch (h) {
+		case 6:
+		case 0:
+			rgb = vec3(hsv.z, t, p);
+			break;
+		case 1:
+			rgb = vec3(q, hsv.z, p);
+			break;
+		case 2:
+			rgb = vec3(p, hsv.z, t);
+			break;
+		case 3:
+			rgb = vec3(p, q, hsv.z);
+			break;
+		case 4:
+			rgb = vec3(t, p, hsv.z);
+			break;
+		case 5:
+			rgb = vec3(hsv.z, p, q);
+			break;
+	}
+	
+	return rgb;
+}
+
+
+void main() {
+	vec3 position = gl_PositionIn[0].xyz;
+	float size = gl_PositionIn[0].w;
+	
+	vec3 velocity = texelFetchBuffer(velocityIn, gl_PrimitiveIDIn).xyz;
+	
+	
+	gl_Position = vec4(position, size);
+	
+	if (length(velocity) == 0.0) {
+		color = vec4(0, 0, 0, 1);
+		EmitVertex();
+		return;
+	}
+	
+	vec2 velocityPolar = cartesian2polar(normalize(velocity).xy);
+	color = vec4(hsv2rgb(vec3(velocityPolar.y, 1.0, 1.0)), 1);
+	
+	EmitVertex();
+}

@@ -1,0 +1,78 @@
+#version 120
+
+#extension GL_EXT_geometry_shader4 : enable
+
+
+uniform samplerBuffer velocityIn;
+
+uniform float ratio;
+
+uniform float deltaTime;
+
+uniform int eventId;
+uniform vec4[10] eventPoints;
+uniform int eventPointNumber;
+
+const float G = 6.67428 * pow(10.0, -11.0);
+
+varying vec4 velocityOut;
+
+
+void main() {
+	vec3 position = gl_PositionIn[0].xyz;
+	float size = gl_PositionIn[0].w;
+	
+	vec4 tmp = texelFetchBuffer(velocityIn, gl_PrimitiveIDIn);
+	vec3 velocity = tmp.xyz;
+	float lifeTime = tmp.w;
+	
+	
+	lifeTime -= deltaTime;
+	if (lifeTime <= 0.0) return;
+	
+	
+	vec3 force = vec3(0);
+	vec3 distance;
+	vec3 distanceNorm;
+	float distanceLength;
+	
+	for (int i = 0; i < eventPointNumber; i++) {
+		distance = eventPoints[i].xyz - position;
+		distanceNorm = normalize(distance);
+		distanceLength = length(distance);
+		
+		if ((eventId & 1) != 0) {
+			force += distanceNorm * G * (eventPoints[i].w / (distanceLength * distanceLength));
+		}
+		if ((eventId & 2) != 0) {
+			velocity -= distanceNorm * 0.0001 * (1.0 / (distanceLength * distanceLength));
+		}
+	}
+	
+	
+	position += velocity * deltaTime + force * deltaTime * deltaTime / 2.0;
+	
+	
+	velocity += force * deltaTime;
+	velocity *= pow(0.9, deltaTime);
+	
+	if (position.x > ratio) {
+		position.x = ratio;
+		velocity.x = -velocity.x;
+	} else if (position.x < -ratio) {
+		position.x = -ratio;
+		velocity.x = -velocity.x;
+	}
+	if (position.y > 1) {
+		position.y = 1;
+		velocity.y = -velocity.y;
+	} else if (position.y < -1) {
+		position.y = -1;
+		velocity.y = -velocity.y;
+	}
+	
+	
+	gl_Position = vec4(position, size);
+	velocityOut = vec4(velocity, lifeTime);
+	EmitVertex();
+}
